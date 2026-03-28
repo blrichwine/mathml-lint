@@ -37,11 +37,16 @@ async function ensureAdapters(): Promise<void> {
     universalAttributes?: unknown;
     SpecLevel?: unknown;
   };
+  const datav4Module = await import('../data/mathml-data-v4.js') as {
+    default?: unknown;
+    presentationElements?: unknown;
+    attributeDefinitions?: unknown;
+    universalAttributes?: unknown;
+    SpecLevel?: unknown;
+  };
 
   const adapterV3 = adapterModule.createMathMLSchemaAdapter(datav3Module.default ?? datav3Module);
-
-  // MathML4 overlay: use v3 schema as base (provisional — will swap for v4 data file when available)
-  const adapterV4 = adapterV3;
+  const adapterV4 = adapterModule.createMathMLSchemaAdapter(datav4Module.default ?? datav4Module);
 
   initSchemaAdapters({ mathml3: adapterV3, mathml4: adapterV4 });
   _adaptersInitialized = true;
