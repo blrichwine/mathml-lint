@@ -42,8 +42,6 @@ Options:
   --overlay <path>         JSON file with per-rule severity overrides
   --ignore-data-mjx        Suppress warnings for data-mjx-* attributes
   --max-findings <n>       Stop after N findings per file (default: 500)
-  --platform <ids>         Target platform(s) for LMS/CMS compatibility checks (L090+)
-                           Comma-separated: wordpress | pressbooks | moodle | canvas | tinymce
   -V, --version            Print version
   -h, --help               Show help
 ```
@@ -70,12 +68,6 @@ mathml-lint book.epub --profile core-mathml4 --format json > report.json
 
 # Suppress mathvariant safe-list warnings with an overlay
 mathml-lint file.html --overlay my-overlays.json
-
-# Check content destined for Canvas LMS
-mathml-lint chapter.html --platform canvas
-
-# Check WordPress content with multiple platform concerns
-mathml-lint post.html --platform wordpress,tinymce
 ```
 
 ---
@@ -88,37 +80,6 @@ mathml-lint post.html --platform wordpress,tinymce
 | `presentation-mathml4` | MathML4 authoring; enables intent/arg hints |
 | `core-mathml3` | Targeting MathML Core renderers (browsers, EPUB RS) |
 | `core-mathml4` | Core + MathML4 intent/arg authoring |
-
----
-
-## Platform Targets
-
-The `--platform` flag enables LMS/CMS-specific compatibility checks (L090+). These rules fire for server-side sanitization and editor-level stripping that would silently destroy MathML content in common authoring environments.
-
-| Platform | What it checks |
-|----------|---------------|
-| `wordpress` | `wp_kses()` strips all MathML unless allowlisted via filter |
-| `pressbooks` | WordPress multisite (`wp_kses`) + EPUB export sanitization |
-| `moodle` | HTML Purifier default config strips all MathML |
-| `canvas` | Canvas LMS allowlist blocks `mfenced`, `menclose`, `maction`, etc. |
-| `tinymce` | TinyMCE default `valid_elements` strips all MathML without a plugin |
-
-Multiple platforms can be specified comma-separated:
-
-```bash
-mathml-lint content.html --platform canvas,tinymce
-```
-
-### Platform targets in the library
-
-```typescript
-import { lintMathML } from 'mathml-lint';
-
-const result = await lintMathML(source, {
-  profile: 'presentation-mathml3',
-  platforms: ['canvas', 'tinymce'],   // array or comma string
-});
-```
 
 ---
 
@@ -212,7 +173,6 @@ See [RULES.md](RULES.md) for the complete rule reference including rationale, tr
 | L060–L062 | Intent/arg authoring hints (MathML4) |
 | L070–L073 | MathML Core compatibility |
 | L080–L084 | W3C MathML Safe List / sanitization warnings |
-| L090–L094 | LMS/CMS platform compatibility (WordPress, Moodle, Canvas, TinyMCE) |
 
 ---
 
