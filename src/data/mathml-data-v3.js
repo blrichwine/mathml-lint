@@ -287,6 +287,69 @@ const attributeDefinitions = {
     specs: [SpecLevel.PRESENTATION]
   },
   
+  // msub/msup/msubsup attributes
+  'subscriptshift': {
+    type: 'length',
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'superscriptshift': {
+    type: 'length',
+    specs: [SpecLevel.PRESENTATION]
+  },
+
+  // mo/mspace linebreaking attributes (MathML3 §3.2.5, §3.2.7)
+  'linebreak': {
+    type: 'enum',
+    values: ['auto', 'newline', 'nobreak', 'goodbreak', 'badbreak'],
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'linebreakstyle': {
+    type: 'enum',
+    values: ['before', 'after', 'duplicate', 'infixlinebreakstyle'],
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'linebreakmultchar': {
+    type: 'string',
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'lineleading': {
+    type: 'length',
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'indentshift': {
+    type: 'length',
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'indentshiftfirst': {
+    type: 'length-or-keyword',
+    values: ['indent'],
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'indentshiftlast': {
+    type: 'length-or-keyword',
+    values: ['indent'],
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'indentalign': {
+    type: 'enum',
+    values: ['left', 'center', 'right', 'auto', 'id'],
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'indentalignfirst': {
+    type: 'enum',
+    values: ['left', 'center', 'right', 'auto', 'id', 'indentalign'],
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'indentalignlast': {
+    type: 'enum',
+    values: ['left', 'center', 'right', 'auto', 'id', 'indentalign'],
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'indenttarget': {
+    type: 'string',
+    specs: [SpecLevel.PRESENTATION]
+  },
+
   // mtable attributes
   'align': {
     type: 'enum',
@@ -300,10 +363,67 @@ const attributeDefinitions = {
   },
   'columnalign': {
     type: 'string-list',
-    values: ['left', 'center', 'right'],
+    values: ['left', 'center', 'right', 'decimalpoint'],
     specs: [SpecLevel.PRESENTATION]
   },
-  
+  'groupalign': {
+    type: 'string',
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'alignmentscope': {
+    type: 'string-list',
+    values: ['true', 'false'],
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'columnwidth': {
+    type: 'string-list',
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'rowspacing': {
+    type: 'string-list',
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'columnspacing': {
+    type: 'string-list',
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'rowlines': {
+    type: 'string-list',
+    values: ['none', 'solid', 'dashed'],
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'columnlines': {
+    type: 'string-list',
+    values: ['none', 'solid', 'dashed'],
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'frame': {
+    type: 'enum',
+    values: ['none', 'solid', 'dashed'],
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'framespacing': {
+    type: 'string',
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'equalrows': {
+    type: 'boolean',
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'equalcolumns': {
+    type: 'boolean',
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'side': {
+    type: 'enum',
+    values: ['left', 'right', 'leftoverlap', 'rightoverlap'],
+    specs: [SpecLevel.PRESENTATION]
+  },
+  'minlabelspacing': {
+    type: 'length',
+    specs: [SpecLevel.PRESENTATION]
+  },
+
   // mtd attributes
   'rowspan': {
     type: 'positive-integer',
@@ -429,9 +549,12 @@ const presentationElements = {
       ...universalAttributes,
       'dir', 'mathcolor', 'mathbackground', 'mathsize', 'mathvariant',
       'displaystyle', 'scriptlevel',
-      'form', 'fence', 'separator', 'lspace', 'rspace', 
+      'form', 'fence', 'separator', 'lspace', 'rspace',
       'stretchy', 'symmetric', 'maxsize', 'minsize',
-      'largeop', 'movablelimits', 'accent'
+      'largeop', 'movablelimits', 'accent',
+      'linebreak', 'linebreakstyle', 'linebreakmultchar', 'lineleading',
+      'indentshift', 'indentshiftfirst', 'indentshiftlast',
+      'indentalign', 'indentalignfirst', 'indentalignlast', 'indenttarget'
     ],
     requiredAttributes: [],
     deprecatedAttributes: []
@@ -461,12 +584,14 @@ const presentationElements = {
       ...universalAttributes,
       'dir', 'mathcolor', 'mathbackground', 'mathsize', 'mathvariant',
       'displaystyle', 'scriptlevel',
-      'width', 'height', 'depth'
+      'width', 'height', 'depth',
+      'linebreak', 'indentshift', 'indentshiftfirst', 'indentshiftlast',
+      'indentalign', 'indentalignfirst', 'indentalignlast', 'indenttarget'
     ],
     requiredAttributes: [],
     deprecatedAttributes: []
   },
-  
+
   'ms': {
     specs: [SpecLevel.MATHML_CORE, SpecLevel.PRESENTATION],
     childCount: ChildCount.ZERO_OR_MORE,
@@ -639,12 +764,13 @@ const presentationElements = {
     allowedAttributes: [
       ...universalAttributes,
       'dir', 'mathcolor', 'mathbackground', 'mathsize',
-      'displaystyle', 'scriptlevel'
+      'displaystyle', 'scriptlevel',
+      'subscriptshift'
     ],
     requiredAttributes: [],
     deprecatedAttributes: []
   },
-  
+
   'msup': {
     specs: [SpecLevel.MATHML_CORE, SpecLevel.PRESENTATION],
     childCount: ChildCount.TWO,
@@ -654,12 +780,13 @@ const presentationElements = {
     allowedAttributes: [
       ...universalAttributes,
       'dir', 'mathcolor', 'mathbackground', 'mathsize',
-      'displaystyle', 'scriptlevel'
+      'displaystyle', 'scriptlevel',
+      'superscriptshift'
     ],
     requiredAttributes: [],
     deprecatedAttributes: []
   },
-  
+
   'msubsup': {
     specs: [SpecLevel.MATHML_CORE, SpecLevel.PRESENTATION],
     childCount: ChildCount.THREE,
@@ -669,7 +796,8 @@ const presentationElements = {
     allowedAttributes: [
       ...universalAttributes,
       'dir', 'mathcolor', 'mathbackground', 'mathsize',
-      'displaystyle', 'scriptlevel'
+      'displaystyle', 'scriptlevel',
+      'subscriptshift', 'superscriptshift'
     ],
     requiredAttributes: [],
     deprecatedAttributes: []
@@ -770,28 +898,31 @@ const presentationElements = {
       ...universalAttributes,
       'dir', 'mathcolor', 'mathbackground', 'mathsize',
       'displaystyle', 'scriptlevel',
-      'align', 'rowalign', 'columnalign'
+      'align', 'rowalign', 'columnalign', 'groupalign', 'alignmentscope',
+      'columnwidth', 'width', 'rowspacing', 'columnspacing',
+      'rowlines', 'columnlines', 'frame', 'framespacing',
+      'equalrows', 'equalcolumns', 'side', 'minlabelspacing'
     ],
     requiredAttributes: [],
     deprecatedAttributes: []
   },
-  
+
   'mtr': {
     specs: [SpecLevel.MATHML_CORE, SpecLevel.PRESENTATION],
     childCount: ChildCount.ZERO_OR_MORE,
-    allowedChildren: ['mtd'],
+    allowedChildren: ['mtd', 'maligngroup'],
     category: 'table',
     onlyValidIn: ['mtable'],
     allowedAttributes: [
       ...universalAttributes,
       'dir', 'mathcolor', 'mathbackground', 'mathsize',
       'displaystyle', 'scriptlevel',
-      'rowalign', 'columnalign'
+      'rowalign', 'columnalign', 'groupalign'
     ],
     requiredAttributes: [],
     deprecatedAttributes: []
   },
-  
+
   'mlabeledtr': {
     specs: [SpecLevel.PRESENTATION],
     childCount: ChildCount.ONE_OR_MORE,
@@ -802,12 +933,12 @@ const presentationElements = {
       ...universalAttributes,
       'dir', 'mathcolor', 'mathbackground', 'mathsize',
       'displaystyle', 'scriptlevel',
-      'rowalign', 'columnalign'
+      'rowalign', 'columnalign', 'groupalign'
     ],
     requiredAttributes: [],
     deprecatedAttributes: []
   },
-  
+
   'mtd': {
     specs: [SpecLevel.MATHML_CORE, SpecLevel.PRESENTATION],
     childCount: ChildCount.ONE_INFERRED,
@@ -818,7 +949,7 @@ const presentationElements = {
       ...universalAttributes,
       'dir', 'mathcolor', 'mathbackground', 'mathsize',
       'displaystyle', 'scriptlevel',
-      'rowspan', 'columnspan', 'rowalign', 'columnalign'
+      'rowspan', 'columnspan', 'rowalign', 'columnalign', 'groupalign'
     ],
     requiredAttributes: [],
     deprecatedAttributes: []
