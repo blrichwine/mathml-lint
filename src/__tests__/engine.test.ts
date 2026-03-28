@@ -360,6 +360,73 @@ describe('L061/L062 — intent and arg', () => {
   });
 });
 
+// ── W3C MathML Safe List ──────────────────────────────────────────────────────
+
+describe('L080–L084 — W3C MathML Safe List', () => {
+  it('<menclose> emits L080 (not on safe list)', async () => {
+    const result = await lintMathML('<math><menclose notation="box"><mi>x</mi></menclose></math>');
+    expect(result.findings.map((f) => f.code)).toContain('L080');
+  });
+
+  it('<mfenced> emits L080 (not on safe list)', async () => {
+    const result = await lintMathML('<math><mfenced><mi>x</mi></mfenced></math>');
+    expect(result.findings.map((f) => f.code)).toContain('L080');
+  });
+
+  it('<mfrac> does NOT emit L080 (is on safe list)', async () => {
+    const result = await lintMathML('<math><mfrac><mi>a</mi><mi>b</mi></mfrac></math>');
+    expect(result.findings.map((f) => f.code)).not.toContain('L080');
+  });
+
+  it('<maction> emits L081 (special treatment, not L080)', async () => {
+    const result = await lintMathML('<math><maction actiontype="toggle"><mi>x</mi></maction></math>');
+    const codes = result.findings.map((f) => f.code);
+    expect(codes).toContain('L081');
+    expect(codes).not.toContain('L080');
+  });
+
+  it('<mphantom> emits L081', async () => {
+    const result = await lintMathML('<math><mphantom><mi>x</mi></mphantom></math>');
+    expect(result.findings.map((f) => f.code)).toContain('L081');
+  });
+
+  it('<annotation> emits L081', async () => {
+    const result = await lintMathML(
+      '<math><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math>'
+    );
+    expect(result.findings.map((f) => f.code)).toContain('L081');
+  });
+
+  it('href on <annotation> emits L082', async () => {
+    const result = await lintMathML(
+      '<math><semantics><mi>x</mi><annotation href="http://example.com" encoding="text/plain">x</annotation></semantics></math>'
+    );
+    expect(result.findings.map((f) => f.code)).toContain('L082');
+  });
+
+  it('annotation without href does NOT emit L082', async () => {
+    const result = await lintMathML(
+      '<math><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math>'
+    );
+    expect(result.findings.map((f) => f.code)).not.toContain('L082');
+  });
+
+  it('mathvariant on <mi> emits L083', async () => {
+    const result = await lintMathML('<math><mi mathvariant="bold">x</mi></math>');
+    expect(result.findings.map((f) => f.code)).toContain('L083');
+  });
+
+  it('lquote on <ms> emits L084', async () => {
+    const result = await lintMathML('<math><ms lquote="[">hello</ms></math>');
+    expect(result.findings.map((f) => f.code)).toContain('L084');
+  });
+
+  it('href on <mrow> emits L084', async () => {
+    const result = await lintMathML('<math><mrow href="http://example.com"><mi>x</mi></mrow></math>');
+    expect(result.findings.map((f) => f.code)).toContain('L084');
+  });
+});
+
 // ── Summary and overlays ──────────────────────────────────────────────────────
 
 describe('summary counts', () => {

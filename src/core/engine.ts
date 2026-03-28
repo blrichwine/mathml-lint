@@ -18,6 +18,7 @@ import { validateSplitMi, validateMiPlainText, validateLargeOperatorInMi, valida
 import { validateImplicitMultiplication, validateInvisibleTimesUsage, validateInvisibleSeparatorUsage, validateApplyFunctionUsage, validateSemanticsStructure } from '../rules/semantic.js';
 import { validateCoreElementSupport, validateCoreAtRiskElement, validateCoreAttributeSupport, validateCoreStylingAttributes } from '../rules/core-compat.js';
 import { validateIntentHint, validateIntentSyntax, validateDetachedArg } from '../rules/hints.js';
+import { validateSafeListElement, validateSafeListSpecialElement, validateAnnotationHref, validateMathvariantSafety, validateUnsafeAttribute } from '../rules/safety.js';
 
 // ── Schema adapter initialisation ─────────────────────────────────────────────
 
@@ -127,6 +128,12 @@ const NODE_RULES: NodeRule[] = [
   validateIntentHint,
   validateIntentSyntax,
   validateDetachedArg,
+  // W3C MathML Safe List — sanitization warnings
+  validateSafeListElement,
+  validateSafeListSpecialElement,
+  validateAnnotationHref,
+  validateMathvariantSafety,
+  validateUnsafeAttribute,
 ];
 
 // ── DOM traversal ─────────────────────────────────────────────────────────────
