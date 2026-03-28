@@ -1,4 +1,4 @@
-/** rules/hints.ts — L060–L062: semantic/intent authoring hints */
+/** rules/hints.ts — L060–L062: semantic/intent authoring hints; L090: alttext warning */
 
 import type { LintContext, LintMessage } from '../types.js';
 import { makeFinding, SPEC_LINKS } from '../core/findings.js';
@@ -103,4 +103,26 @@ export function validateDetachedArg(node: Element, _ctx: LintContext): LintMessa
     `arg="${argValue}" on <${normalizeTagName(node.tagName)}> has no ancestor with an intent attribute. ` +
     `The arg attribute is only meaningful when an ancestor specifies an intent expression referencing it.`,
     SPEC_LINKS.intent)];
+}
+
+/**
+ * L090 — alttext attribute present on <math>.
+ *
+ * The alttext attribute was intended as an accessible fallback but current
+ * assistive technology implementations handle it inconsistently: some AT
+ * ignores the MathML entirely when alttext is present and reads only the
+ * fallback text, bypassing native MathML accessibility. The DAISY best
+ * practices guide explicitly recommends NOT using alttext.
+ *
+ * Reference: https://daisy.github.io/transitiontoepub/best-practices/mathML/mathMLBestPractices.html
+ */
+export function validateAlttext(node: Element, _ctx: LintContext): LintMessage[] {
+  if (normalizeTagName(node.tagName) !== 'math') return [];
+  if (!node.hasAttribute('alttext')) return [];
+
+  return [makeFinding('warn', 'L090', 'alttext attribute may suppress MathML accessibility',
+    `The alttext attribute on <math> can cause some assistive technologies to ignore the ` +
+    `MathML entirely and read only the fallback text. Per DAISY best practices, remove ` +
+    `alttext and rely on native MathML accessibility instead.`,
+    [{ label: 'DAISY MathML Best Practices', url: 'https://daisy.github.io/transitiontoepub/best-practices/mathML/mathMLBestPractices.html', type: 'guide' }])];
 }
