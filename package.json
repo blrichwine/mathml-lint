@@ -1,0 +1,68 @@
+{
+  "name": "mathml-lint",
+  "version": "0.1.0",
+  "description": "Heuristic MathML authoring linter — catches semantic errors that XML schema validators miss",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "mathml-lint": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./formats/html": {
+      "import": "./dist/formats/html.js",
+      "require": "./dist/formats/html.cjs"
+    },
+    "./formats/epub": {
+      "import": "./dist/formats/epub.js",
+      "require": "./dist/formats/epub.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm run test"
+  },
+  "keywords": [
+    "mathml",
+    "linter",
+    "accessibility",
+    "epub",
+    "nimas",
+    "a11y",
+    "math"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blrichwine/mathml-lint.git"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "^0.9.8",
+    "commander": "^12.1.0",
+    "glob": "^11.0.0",
+    "sax": "^1.4.1"
+  },
+  "optionalDependencies": {
+    "adm-zip": "^0.5.16"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
+    "@types/sax": "^1.2.7",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.3",
+    "vitest": "^3.1.1"
+  }
+}
