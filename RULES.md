@@ -493,6 +493,108 @@ An attribute that would visibly affect rendering or semantics is not on the W3C 
 
 ---
 
+---
+
+## L090–L094 — LMS / CMS Platform Compatibility
+
+These rules fire only when one or more target platforms are specified via the `--platform` CLI flag or the `platforms` API option.  They cover **server-side** content sanitization and editor-level stripping that occurs in common Learning Management Systems and publishing platforms — distinct from the client-side W3C safe-list concerns covered by L080–L084.
+
+```bash
+mathml-lint file.html --platform wordpress
+mathml-lint file.html --platform canvas,tinymce
+```
+
+---
+
+### L090 — Missing alttext on \<math\>
+
+| Code | Severity | Profile | Platforms |
+|------|----------|---------|-----------|
+| L090 | info | all | unconditional |
+
+The `<math>` element has no `alttext` attribute. When MathML is stripped or cannot be rendered by the target environment (browser fallback, stripped by a sanitizer, unsupported EPUB reading system), there is no accessible text representation. `alttext` is also used by screen readers that do not natively support MathML.
+
+**Recommendation:** Add `alttext` with a plain-text description of the expression, e.g. `alttext="x squared plus y squared equals r squared"`.
+
+**Note:** This rule fires unconditionally — no `--platform` flag is required. It applies universally as an accessibility and resilience best practice.
+
+---
+
+### L091 — MathML stripped by WordPress wp_kses()
+
+| Code | Severity | Profile | Platforms |
+|------|----------|---------|-----------|
+| L091 | warn | all | `wordpress`, `pressbooks` |
+
+WordPress runs all saved post and page content through `wp_kses()`, which removes every HTML element not on an explicit server-side allowlist. MathML elements are not on the default allowlist and are silently stripped at post-save time. This is a PHP-level operation — it happens regardless of what a browser or DOMPurify would accept.
+
+Pressbooks (built on WordPress multisite) inherits this behavior and applies additional sanitization during EPUB export.
+
+**Recommendations:**
+- Use a plugin that stores LaTeX shortcodes and renders client-side: **WP QuickLaTeX**, **MathJax-LaTeX**, or Jetpack's Beautiful Math. These plugins intercept content before `wp_kses` runs or replace MathML with safe shortcodes.
+- Alternatively, add MathML elements to the allowlist via the `wp_kses_allowed_html` filter in `functions.php`.
+
+**Reference:** https://developer.wordpress.org/reference/functions/wp_kses/
+
+---
+
+### L092 — MathML stripped by Moodle HTML Purifier
+
+| Code | Severity | Profile | Platforms |
+|------|----------|---------|-----------|
+| L092 | warn | all | `moodle` |
+
+Moodle filters user-supplied HTML through HTML Purifier. The default HTML Purifier configuration has no MathML schema, so all MathML elements are stripped from stored content. The MathJax filter plugin (the standard way to display math in Moodle) renders `$$…$$` and `\(…\)` LaTeX delimiters — it does not store or process raw MathML.
+
+**Recommendations:**
+- Convert expressions to LaTeX and use Moodle's MathJax filter.
+- For raw MathML storage, install a MathML-aware Moodle plugin that extends HTML Purifier with a MathML element schema.
+
+**Reference:** https://docs.moodle.org/en/HTML_purifier
+
+---
+
+### L093 — Element not in Canvas LMS sanitizer allowlist
+
+| Code | Severity | Profile | Platforms |
+|------|----------|---------|-----------|
+| L093 | warn | all | `canvas` |
+
+Instructure Canvas sanitizes user-submitted HTML with a Ruby Loofah/SafeListSanitizer allowlist that closely tracks the W3C MathML safe list but excludes several elements. Elements not on the allowlist are stripped (along with their subtrees) when content is saved through the Canvas Rich Content Editor or via the API.
+
+**Blocked elements:** `<mfenced>`, `<menclose>`, `<maction>`, `<mglyph>`, `<mlabeledtr>`, `<maligngroup>`, `<malignmark>`
+
+The Canvas equation editor generates MathML using only core elements and never produces these tags. If you author MathML manually using blocked elements, they will be silently removed.
+
+**Recommendations:**
+- Replace `<mfenced>` with `<mrow>` + `<mo>` fence operators.
+- Replace `<menclose>` with equivalent CSS or `<mrow>` + explicit `<mo>` notation markers.
+- Omit `<mglyph>`, `<maligngroup>`, `<malignmark>` — use core MathML equivalents.
+- Replace `<mlabeledtr>` with a plain `<mtr>`.
+
+**Reference:** https://github.com/instructure/canvas-lms (see `app/models/sanitize_field.rb`)
+
+---
+
+### L094 — TinyMCE default config strips MathML
+
+| Code | Severity | Profile | Platforms |
+|------|----------|---------|-----------|
+| L094 | warn | all | `tinymce` |
+
+TinyMCE's default `valid_elements` configuration does not include any MathML tags. Without a MathML-aware plugin or explicit `extended_valid_elements` configuration, any `<math>` block is stripped on the first save through TinyMCE.
+
+This affects any platform that embeds TinyMCE without MathML configuration: many LMS platforms (Canvas uses TinyMCE), WordPress with the Classic Editor plugin, and others.
+
+**Recommendations:**
+- Install **MathType by Wiris** (`mathtype-tinymce5` / `mathtype-tinymce6`) for full MathML authoring support.
+- Or use TinyMCE 6+'s built-in Equation plugin (stores LaTeX, not MathML).
+- Or add MathML to `extended_valid_elements` in the TinyMCE `init` config — must enumerate every element and attribute individually.
+
+**Reference:** https://www.tiny.cloud/docs/configure/content-filtering/
+
+---
+
 ## Profile Summary
 
 | Profile ID | Subset | Version | Semantics hints | Profile boundary | Core compat rules |
@@ -538,4 +640,4 @@ Reserved ranges:
 - L060–L069: intent/arg authoring hints
 - L070–L079: MathML Core compatibility
 - L080–L089: W3C MathML Safe List / sanitization
-- L090–L099: reserved for platform whitelist rules (future)
+- L090–L099: LMS/CMS platform compatibility (L090–L094 active)

@@ -4,7 +4,7 @@
  * and returns a LintResult.
  */
 
-import type { LintMessage, LintResult, LintOptions, LintContext, LintProfile } from '../types.js';
+import type { LintMessage, LintResult, LintOptions, LintContext, LintProfile, LintPlatform } from '../types.js';
 import { parseXML } from './parser.js';
 import { dedupeFindings, applyOverlays } from './findings.js';
 import { initSchemaAdapters, childElements } from '../rules/shared.js';
@@ -19,6 +19,7 @@ import { validateImplicitMultiplication, validateInvisibleTimesUsage, validateIn
 import { validateCoreElementSupport, validateCoreAtRiskElement, validateCoreAttributeSupport, validateCoreStylingAttributes } from '../rules/core-compat.js';
 import { validateIntentHint, validateIntentSyntax, validateDetachedArg } from '../rules/hints.js';
 import { validateSafeListElement, validateSafeListSpecialElement, validateAnnotationHref, validateMathvariantSafety, validateUnsafeAttribute } from '../rules/safety.js';
+import { validateAlttext, validateWordPressKses, validateMoodlePurifier, validateCanvasAllowlist, validateTinyMCEMathML } from '../rules/platform-compat.js';
 
 // ── Schema adapter initialisation ─────────────────────────────────────────────
 
@@ -94,6 +95,22 @@ export function resolveProfile(profileId?: string): LintProfile {
   return PROFILE_PRESETS[profileId] ?? PROFILE_PRESETS['presentation-mathml3'];
 }
 
+const VALID_PLATFORMS = new Set<LintPlatform>([
+  'wordpress', 'pressbooks', 'moodle', 'canvas', 'tinymce',
+]);
+
+export function parsePlatforms(input: LintPlatform | LintPlatform[] | string | undefined): Set<LintPlatform> {
+  if (!input) return new Set();
+  const tokens = Array.isArray(input)
+    ? input
+    : String(input).split(',').map((s) => s.trim());
+  const result = new Set<LintPlatform>();
+  for (const t of tokens) {
+    if (VALID_PLATFORMS.has(t as LintPlatform)) result.add(t as LintPlatform);
+  }
+  return result;
+}
+
 // ── Per-node rule runners ─────────────────────────────────────────────────────
 
 type NodeRule = (node: Element, ctx: LintContext) => LintMessage[];
@@ -139,6 +156,12 @@ const NODE_RULES: NodeRule[] = [
   validateAnnotationHref,
   validateMathvariantSafety,
   validateUnsafeAttribute,
+  // LMS / CMS platform compatibility (L090+)
+  validateAlttext,
+  validateWordPressKses,
+  validateMoodlePurifier,
+  validateCanvasAllowlist,
+  validateTinyMCEMathML,
 ];
 
 // ── DOM traversal ─────────────────────────────────────────────────────────────
@@ -158,6 +181,7 @@ export async function lintMathML(source: string, options: LintOptions = {}): Pro
   const profile = resolveProfile(options.profile as string | undefined);
   const overlays = options.overlays ?? [];
   const maxFindings = options.maxFindings ?? 500;
+  const platforms = parsePlatforms(options.platforms);
 
   const { doc, locate, parseError } = parseXML(source, options.sourceFile);
 
@@ -167,6 +191,7 @@ export async function lintMathML(source: string, options: LintOptions = {}): Pro
     profile,
     overlays,
     ignoreDataMjxAttributes: options.ignoreDataMjxAttributes ?? false,
+    platforms,
   };
 
   const rawFindings: LintMessage[] = [];
@@ -225,6 +250,7 @@ export function lintMathMLSync(source: string, options: LintOptions = {}): LintR
   const profile = resolveProfile(options.profile as string | undefined);
   const overlays = options.overlays ?? [];
   const maxFindings = options.maxFindings ?? 500;
+  const platforms = parsePlatforms(options.platforms);
 
   const { doc, locate, parseError } = parseXML(source, options.sourceFile);
 
@@ -234,6 +260,7 @@ export function lintMathMLSync(source: string, options: LintOptions = {}): LintR
     profile,
     overlays,
     ignoreDataMjxAttributes: options.ignoreDataMjxAttributes ?? false,
+    platforms,
   };
 
   const rawFindings: LintMessage[] = [];

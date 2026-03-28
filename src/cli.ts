@@ -70,7 +70,9 @@ program
   .option('--overlay <path>', 'Path to JSON overlay rules file')
   .option('--ignore-data-mjx', 'Suppress warnings for data-mjx-* attributes', false)
   .option('--max-findings <n>', 'Stop after N findings per file', '500')
-  .option('--semantics', 'Enable semantics / intent authoring hints (L06x)', false);
+  .option('--semantics', 'Enable semantics / intent authoring hints (L06x)', false)
+  .option('--platform <ids>', 'Target platform(s) for LMS/CMS compatibility checks (L090+).\n' +
+    '                           Comma-separated: wordpress,pressbooks,moodle,canvas,tinymce');
 
 program.parse();
 
@@ -81,6 +83,7 @@ const opts = program.opts<{
   ignoreDataMjx: boolean;
   maxFindings: string;
   semantics: boolean;
+  platform?: string;
 }>();
 
 const files = program.args;
@@ -92,6 +95,7 @@ const lintOptions: LintOptions = {
   overlays,
   maxFindings: parseInt(opts.maxFindings, 10),
   ignoreDataMjxAttributes: opts.ignoreDataMjx,
+  platforms: opts.platform,
 };
 
 // ── Run ───────────────────────────────────────────────────────────────────────

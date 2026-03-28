@@ -55,6 +55,19 @@ export interface OverlayRule {
   severity: Severity | 'off';
 }
 
+/**
+ * Target platform for LMS/CMS compatibility checks (L090+).
+ * When set, platform-specific rules fire for the named environment.
+ * Multiple platforms can be targeted at once.
+ *
+ *   wordpress  — Checks for wp_kses() server-side stripping of MathML
+ *   pressbooks — Pressbooks (WordPress multisite); inherits wp_kses concerns
+ *   moodle     — Moodle's HTML Purifier default config strips MathML
+ *   canvas     — Instructure Canvas LMS allowlist-based sanitizer
+ *   tinymce    — TinyMCE editor without a MathML plugin (e.g. MathType/Wiris)
+ */
+export type LintPlatform = 'wordpress' | 'pressbooks' | 'moodle' | 'canvas' | 'tinymce';
+
 export interface LintOptions {
   profile?: string | LintProfile;
   overlays?: OverlayRule[];
@@ -63,6 +76,11 @@ export interface LintOptions {
   ignoreDataMjxAttributes?: boolean;
   /** Source file name for EPUB/multi-file input */
   sourceFile?: string;
+  /**
+   * Target platform(s) for LMS/CMS compatibility checks (L090+).
+   * Accepts a single platform ID or a comma-separated list (CLI) or array (API).
+   */
+  platforms?: LintPlatform | LintPlatform[] | string;
 }
 
 export interface LintContext {
@@ -71,4 +89,6 @@ export interface LintContext {
   profile: LintProfile;
   overlays: OverlayRule[];
   ignoreDataMjxAttributes: boolean;
+  /** Active platform targets. Empty set = no platform-specific checks. */
+  platforms: Set<LintPlatform>;
 }
