@@ -280,6 +280,30 @@ describe('L033/L034 — negative spacing', () => {
 // ── Core compat ───────────────────────────────────────────────────────────────
 
 describe('L070/L071/L072 — MathML Core compat', () => {
+  it('<semantics> in core profile does NOT emit L070 (semantics is in Core)', async () => {
+    const result = await lintMathML(
+      '<math><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math>',
+      { profile: 'core-mathml3' }
+    );
+    expect(result.findings.map((f) => f.code)).not.toContain('L070');
+  });
+
+  it('<menclose> in core profile emits L070', async () => {
+    const result = await lintMathML(
+      '<math><menclose notation="box"><mi>x</mi></menclose></math>',
+      { profile: 'core-mathml3' }
+    );
+    expect(result.findings.map((f) => f.code)).toContain('L070');
+  });
+
+  it('<maction> in core profile emits L070', async () => {
+    const result = await lintMathML(
+      '<math><maction actiontype="toggle"><mi>x</mi></maction></math>',
+      { profile: 'core-mathml3' }
+    );
+    expect(result.findings.map((f) => f.code)).toContain('L070');
+  });
+
   it('<mfenced> in core profile emits L070', async () => {
     const result = await lintMathML(
       '<math><mfenced><mi>x</mi></mfenced></math>',

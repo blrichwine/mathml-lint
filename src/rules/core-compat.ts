@@ -8,9 +8,11 @@ import { normalizeTagName } from './shared.js';
  * Elements that are in Presentation MathML but not in MathML Core.
  * Sources: https://w3c.github.io/mathml-core/ (§1.3 and element index)
  */
+// Elements present in MathML Presentation but NOT in MathML Core.
+// semantics/annotation/annotation-xml ARE in MathML Core — do not include them here.
 const NOT_IN_CORE = new Set([
   'mfenced', 'mstyle', 'menclose', 'maction', 'mlabeledtr',
-  'semantics', 'annotation', 'annotation-xml',
+  'mglyph', 'malignmark', 'maligngroup',
 ]);
 
 /**
