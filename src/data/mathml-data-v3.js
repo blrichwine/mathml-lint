@@ -76,7 +76,7 @@ const attributeDefinitions = {
   // Math-specific attributes (valid on specific elements)
   'dir': {
     type: 'enum',
-    values: ['ltr', 'rtl'],
+    values: ['ltr', 'rtl', 'auto'],
     specs: [SpecLevel.MATHML_CORE, SpecLevel.PRESENTATION]
   },
   'mathcolor': {
@@ -542,7 +542,7 @@ const presentationElements = {
   },
   
   'mstyle': {
-    specs: [SpecLevel.MATHML_CORE, SpecLevel.PRESENTATION],
+    specs: [SpecLevel.PRESENTATION],
     childCount: ChildCount.ONE_INFERRED,
     allowedChildren: FLOW_CONTENT,
     category: 'layout',
@@ -868,7 +868,7 @@ const presentationElements = {
   },
   
   'maction': {
-    specs: [SpecLevel.MATHML_CORE, SpecLevel.PRESENTATION],
+    specs: [SpecLevel.PRESENTATION],
     childCount: ChildCount.ONE_OR_MORE,
     allowedChildren: FLOW_CONTENT,
     category: 'enlivening',
