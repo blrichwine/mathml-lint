@@ -12,7 +12,11 @@ import {
   isLikelyWordRunPair,
   IMPLICIT_MULTIPLICATION_SEQUENCE_CONTEXTS,
   IMPLICIT_MULTIPLICATION_OPERAND_TAGS,
+  LATEX_BUILTIN_FUNCTION_NAMES,
+  OPERATORNAME_FUNCTION_NAMES,
 } from './shared.js';
+
+const ALL_FUNCTION_NAMES = new Set([...LATEX_BUILTIN_FUNCTION_NAMES, ...OPERATORNAME_FUNCTION_NAMES]);
 
 /**
  * L035 — Missing invisible times (U+2062) between implicit multiplication operands.
@@ -44,6 +48,9 @@ export function validateImplicitMultiplication(node: Element, ctx: LintContext):
 
     // Skip if it looks like a multi-letter word run
     if (isLikelyWordRunPair(children, i, i + 1)) continue;
+
+    // Skip if left is a function-name <mi> — L031 handles that case
+    if (leftTag === 'mi' && ALL_FUNCTION_NAMES.has(left.textContent?.trim() ?? '')) continue;
 
     findings.push(makeFinding('info', 'L035', 'Missing invisible times operator',
       `Adjacent <${leftTag}> and <${rightTag}> may represent implicit multiplication. ` +

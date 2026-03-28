@@ -96,8 +96,8 @@ export function parseXML(source: string, sourceFile?: string): ParseResult {
   try {
     const saxParser = sax.parser(true /* strict */, {});
     saxParser.onopentag = () => {
-      // sax line/column: line is 1-indexed, column is 0-indexed → normalise to 1-indexed
-      positionsByIndex.push({ line: saxParser.line, col: saxParser.column + 1 });
+      // sax line/column: both are 0-indexed → normalise to 1-indexed
+      positionsByIndex.push({ line: saxParser.line + 1, col: saxParser.column + 1 });
     };
     saxParser.write(source).close();
   } catch {
