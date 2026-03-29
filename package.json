@@ -51,12 +51,10 @@
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.9.8",
+    "adm-zip": "^0.5.16",
     "commander": "^12.1.0",
     "glob": "^11.0.0",
     "sax": "^1.4.1"
-  },
-  "optionalDependencies": {
-    "adm-zip": "^0.5.16"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.8",

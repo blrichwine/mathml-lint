@@ -2,32 +2,16 @@
  * formats/epub.ts
  * Unzip an EPUB3 file, locate spine HTML/XHTML documents, extract and lint
  * all MathML <math> blocks. Node.js only (uses 'node:fs' and 'adm-zip').
- *
- * adm-zip is an optional peer dependency; if absent at runtime the function
- * throws a helpful error.
  */
 
-import type { LintOptions, LintResult } from '../types.js';
+import AdmZip from 'adm-zip';
+import type { LintOptions } from '../types.js';
 import { lintHtmlFile, type HtmlLintResult } from './html.js';
 
 export interface EpubLintResult {
   sourceFile: string;
   spineItems: HtmlLintResult[];
   totalFindings: number;
-}
-
-async function loadAdmZip(): Promise<new (path: string) => {
-  getEntries(): Array<{ entryName: string; getData(): Buffer }>;
-}> {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mod = await import('adm-zip') as any;
-    return mod.default ?? mod;
-  } catch {
-    throw new Error(
-      'adm-zip is required for EPUB linting. Install it: npm install adm-zip'
-    );
-  }
 }
 
 /** Parse the OPF manifest to get spine item hrefs (XHTML documents). */
@@ -65,7 +49,6 @@ export async function lintEpubFile(
   epubPath: string,
   options: LintOptions = {},
 ): Promise<EpubLintResult> {
-  const AdmZip = await loadAdmZip();
   const zip = new AdmZip(epubPath);
 
   const entries = zip.getEntries();
