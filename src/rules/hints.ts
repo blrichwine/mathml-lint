@@ -1,4 +1,4 @@
-/** rules/hints.ts — L060–L062: semantic/intent authoring hints; L090: alttext warning */
+/** rules/hints.ts — L060–L062: semantic/intent authoring hints; L090–L091: alttext/xmlns warnings */
 
 import type { LintContext, LintMessage } from '../types.js';
 import { makeFinding, SPEC_LINKS } from '../core/findings.js';
@@ -16,7 +16,6 @@ import {
  * This is an info-level hint, not an error.
  */
 export function validateIntentHint(node: Element, ctx: LintContext): LintMessage[] {
-  if (!ctx.profile.showSemanticsHints) return [];
 
   const tag = normalizeTagName(node.tagName);
   if (!SCRIPT_BASE_TAGS.has(tag)) return [];
@@ -125,4 +124,27 @@ export function validateAlttext(node: Element, _ctx: LintContext): LintMessage[]
     `MathML entirely and read only the fallback text. Per DAISY best practices, remove ` +
     `alttext and rely on native MathML accessibility instead.`,
     [{ label: 'DAISY MathML Best Practices', url: 'https://daisy.github.io/transitiontoepub/best-practices/mathML/mathMLBestPractices.html', type: 'guide' }])];
+}
+
+const MATHML_NAMESPACE = 'http://www.w3.org/1998/Math/MathML';
+
+/**
+ * L091 — Wrong xmlns value on <math>.
+ *
+ * When an xmlns attribute is present on <math>, it must be exactly the MathML
+ * namespace URI. Any other value tells parsers to treat the element as a
+ * foreign-namespace element, breaking rendering and accessibility.
+ */
+export function validateXmlns(node: Element, _ctx: LintContext): LintMessage[] {
+  if (normalizeTagName(node.tagName) !== 'math') return [];
+  if (!node.hasAttribute('xmlns')) return [];
+
+  const value = node.getAttribute('xmlns') ?? '';
+  if (value === MATHML_NAMESPACE) return [];
+
+  return [makeFinding('error', 'L091', 'Wrong xmlns value on <math>',
+    `The xmlns attribute is "${value}" but must be "${MATHML_NAMESPACE}". ` +
+    `An incorrect namespace URI causes parsers to treat the element as a foreign namespace, ` +
+    `breaking rendering and accessibility.`,
+    SPEC_LINKS.syntax)];
 }

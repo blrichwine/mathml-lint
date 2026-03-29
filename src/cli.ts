@@ -69,8 +69,7 @@ program
   .option('-f, --format <fmt>', 'Output format: text (default) or json', 'text')
   .option('--overlay <path>', 'Path to JSON overlay rules file')
   .option('--ignore-data-mjx', 'Suppress warnings for data-mjx-* attributes', false)
-  .option('--max-findings <n>', 'Stop after N findings per file', '500')
-  .option('--semantics', 'Enable semantics / intent authoring hints (L06x)', false);
+  .option('--max-findings <n>', 'Stop after N findings per file', '500');
 
 program.parse();
 
@@ -80,7 +79,6 @@ const opts = program.opts<{
   overlay?: string;
   ignoreDataMjx: boolean;
   maxFindings: string;
-  semantics: boolean;
 }>();
 
 const files = program.args;

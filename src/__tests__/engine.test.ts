@@ -195,12 +195,12 @@ describe('L031 — missing function application', () => {
     expect(result.findings.map((f) => f.code)).not.toContain('L031');
   });
 
-  it('L031 does not fire on mathml3 profile (showSemanticsHints=false)', async () => {
+  it('L031 fires on mathml3 profile', async () => {
     const result = await lintMathML(
       '<math><mrow><mi>sin</mi><mrow><mi>x</mi></mrow></mrow></math>',
       { profile: 'presentation-mathml3' }
     );
-    expect(result.findings.map((f) => f.code)).not.toContain('L031');
+    expect(result.findings.map((f) => f.code)).toContain('L031');
   });
 });
 

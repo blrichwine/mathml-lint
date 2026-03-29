@@ -47,8 +47,7 @@ const FUNCTION_NAMES = new Set([...LATEX_BUILTIN_FUNCTION_NAMES, ...OPERATORNAME
  * Fires when a function-name <mi> (e.g. <mi>sin</mi>) is immediately followed by
  * its argument without an U+2061 APPLY FUNCTION <mo> between them.
  */
-export function validateFunctionApplication(node: Element, ctx: LintContext): LintMessage[] {
-  if (!ctx.profile.showSemanticsHints) return [];
+export function validateFunctionApplication(node: Element, _ctx: LintContext): LintMessage[] {
 
   const tag = normalizeTagName(node.tagName);
   if (!['math', 'mrow', 'mtd'].includes(tag)) return [];

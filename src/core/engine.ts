@@ -17,7 +17,7 @@ import { validateArity } from '../rules/arity.js';
 import { validateSplitMi, validateMiPlainText, validateLargeOperatorInMi, validateNumericInWrongToken, validateFenceInWrongToken, validateEmptyToken, validateIndexSequence } from '../rules/token.js';
 import { validateImplicitMultiplication, validateInvisibleTimesUsage, validateInvisibleSeparatorUsage, validateApplyFunctionUsage, validateSemanticsStructure } from '../rules/semantic.js';
 import { validateCoreElementSupport, validateCoreAtRiskElement, validateCoreAttributeSupport, validateCoreStylingAttributes } from '../rules/core-compat.js';
-import { validateIntentHint, validateIntentSyntax, validateDetachedArg, validateAlttext } from '../rules/hints.js';
+import { validateIntentHint, validateIntentSyntax, validateDetachedArg, validateAlttext, validateXmlns } from '../rules/hints.js';
 import { validateSafeListElement, validateSafeListSpecialElement, validateAnnotationHref, validateMathvariantSafety, validateUnsafeAttribute } from '../rules/safety.js';
 
 // ── Schema adapter initialisation ─────────────────────────────────────────────
@@ -59,7 +59,6 @@ const PROFILE_PRESETS: Record<string, LintProfile> = {
     id: 'presentation-mathml3',
     subset: 'presentation',
     version: 'mathml3',
-    showSemanticsHints: false,
     warnForProfileBoundary: false,
     allowContentInAnnotations: true,
   },
@@ -67,7 +66,6 @@ const PROFILE_PRESETS: Record<string, LintProfile> = {
     id: 'presentation-mathml4',
     subset: 'presentation',
     version: 'mathml4',
-    showSemanticsHints: true,
     warnForProfileBoundary: false,
     allowContentInAnnotations: true,
   },
@@ -75,7 +73,6 @@ const PROFILE_PRESETS: Record<string, LintProfile> = {
     id: 'core-mathml3',
     subset: 'core',
     version: 'mathml3',
-    showSemanticsHints: false,
     warnForProfileBoundary: true,
     allowContentInAnnotations: false,
   },
@@ -83,7 +80,6 @@ const PROFILE_PRESETS: Record<string, LintProfile> = {
     id: 'core-mathml4',
     subset: 'core',
     version: 'mathml4',
-    showSemanticsHints: true,
     warnForProfileBoundary: true,
     allowContentInAnnotations: false,
   },
@@ -135,6 +131,7 @@ const NODE_RULES: NodeRule[] = [
   validateDetachedArg,
   // Accessibility authoring
   validateAlttext,
+  validateXmlns,
   // W3C MathML Safe List — sanitization warnings
   validateSafeListElement,
   validateSafeListSpecialElement,

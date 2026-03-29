@@ -43,7 +43,6 @@ export interface LintProfile {
   id: string;
   subset: 'core' | 'presentation';
   version: 'mathml3' | 'mathml4';
-  showSemanticsHints: boolean;
   warnForProfileBoundary: boolean;
   allowContentInAnnotations: boolean;
 }

@@ -23,7 +23,6 @@ const ALL_FUNCTION_NAMES = new Set([...LATEX_BUILTIN_FUNCTION_NAMES, ...OPERATOR
  * Fires on adjacent math operands (mi/mn/mrow/...) inside mrow/math/mtd without any operator.
  */
 export function validateImplicitMultiplication(node: Element, ctx: LintContext): LintMessage[] {
-  if (!ctx.profile.showSemanticsHints) return [];
 
   const tag = normalizeTagName(node.tagName);
   if (!IMPLICIT_MULTIPLICATION_SEQUENCE_CONTEXTS.has(tag)) return [];
@@ -156,7 +155,6 @@ export function validateApplyFunctionUsage(node: Element, _ctx: LintContext): Li
  * A <semantics> element without any annotation is usually an authoring mistake.
  */
 export function validateSemanticsStructure(node: Element, ctx: LintContext): LintMessage[] {
-  if (!ctx.profile.showSemanticsHints) return [];
 
   const tag = normalizeTagName(node.tagName);
   if (tag !== 'semantics') return [];
