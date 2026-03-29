@@ -189,7 +189,7 @@ A child element is not permitted inside the parent by the MathML schema. For exa
 
 | Code | Severity | Profile |
 |------|----------|---------|
-| L031 | warn | profiles with `showSemanticsHints: true` (mathml4, semhints) |
+| L031 | warn | all |
 
 A recognized function-name `<mi>` (e.g. `sin`, `cos`, `log`, `lim`) is directly followed by its argument without an invisible function application operator `<mo>&#x2061;</mo>` (U+2061) between them.
 
@@ -235,7 +235,7 @@ A deprecated attribute is present on the `<math>` root element:
 
 | Code | Severity | Profile |
 |------|----------|---------|
-| L035 | info | profiles with `showSemanticsHints: true` |
+| L035 | info | all |
 
 Two adjacent operand elements (e.g. `<mi>x</mi><mi>y</mi>`) appear inside a multiplication context without an invisible times operator `<mo>&#x2062;</mo>` (U+2062) between them.
 
@@ -277,7 +277,7 @@ U+2061 APPLY FUNCTION appears as the first child of its parent, or follows a non
 
 | Code | Severity | Profile |
 |------|----------|---------|
-| L039 | info | profiles with `showSemanticsHints: true` |
+| L039 | info | all |
 
 A `<semantics>` element has no `<annotation>` or `<annotation-xml>` child. A `<semantics>` wrapper without any annotation provides no benefit over a plain `<mrow>`.
 
@@ -335,13 +335,11 @@ A `<mn>` element with a multi-digit value is used as a subscript index. This may
 
 ## L060–L062 — Intent and Arg Authoring Hints
 
-> These rules only fire on profiles with `showSemanticsHints: true` (mathml4 profiles) or when explicitly enabled.
-
 ### L060 — Consider adding intent annotation
 
 | Code | Severity | Profile |
 |------|----------|---------|
-| L060 | info | profiles with `showSemanticsHints: true` |
+| L060 | info | all |
 
 A script element (`<msup>`, `<munder>`, etc.) whose base is a large operator (∑, ∏, ∫, `lim`) does not have an `intent` attribute. Large operator constructs frequently encode concepts (sum-over, integral, limit) that are ambiguous without explicit annotation.
 
@@ -493,14 +491,40 @@ An attribute that would visibly affect rendering or semantics is not on the W3C 
 
 ---
 
+## L090–L091 — Accessibility and Namespace Rules
+
+### L090 — alttext attribute may suppress MathML accessibility
+
+| Code | Severity | Profile |
+|------|----------|---------|
+| L090 | warn | all |
+
+The `alttext` attribute is present on a `<math>` element. While intended as an accessible text fallback, current AT implementations handle it inconsistently: some AT ignores the MathML entirely when `alttext` is present and reads only the fallback text, bypassing native MathML accessibility. The DAISY best practices guide explicitly recommends **not** using `alttext`.
+
+**Rationale:** Remove `alttext` and rely on native MathML accessibility. If a plain-text fallback is required, use `aria-label` on the surrounding HTML container instead.
+
+**Reference:** [DAISY MathML Best Practices](https://daisy.github.io/transitiontoepub/best-practices/mathML/mathMLBestPractices.html)
+
+### L091 — Wrong xmlns value on `<math>`
+
+| Code | Severity | Profile |
+|------|----------|---------|
+| L091 | error | all |
+
+An `xmlns` attribute is present on the `<math>` element but its value is not the MathML namespace URI `http://www.w3.org/1998/Math/MathML`. An incorrect namespace URI causes XML parsers and browsers to treat the element as a foreign-namespace element, breaking rendering and accessibility entirely.
+
+**Rationale:** If `xmlns` is present it must be exactly `http://www.w3.org/1998/Math/MathML`. Omitting `xmlns` entirely is also valid in HTML5 documents where the MathML namespace is implied.
+
+---
+
 ## Profile Summary
 
-| Profile ID | Subset | Version | Semantics hints | Profile boundary | Core compat rules |
-|-----------|--------|---------|-----------------|-----------------|-------------------|
-| `presentation-mathml3` | presentation | MathML 3 | off | off | off |
-| `presentation-mathml4` | presentation | MathML 4 | **on** | off | off |
-| `core-mathml3` | core | MathML 3 | off | **on** | **on** |
-| `core-mathml4` | core | MathML 4 | **on** | **on** | **on** |
+| Profile ID | Subset | Version | Profile boundary | Core compat rules |
+|-----------|--------|---------|-----------------|-------------------|
+| `presentation-mathml3` | presentation | MathML 3 | off | off |
+| `presentation-mathml4` | presentation | MathML 4 | off | off |
+| `core-mathml3` | core | MathML 3 | **on** | **on** |
+| `core-mathml4` | core | MathML 4 | **on** | **on** |
 
 Default profile: `presentation-mathml3`
 
@@ -538,4 +562,4 @@ Reserved ranges:
 - L060–L069: intent/arg authoring hints
 - L070–L079: MathML Core compatibility
 - L080–L089: W3C MathML Safe List / sanitization
-- L090–L099: reserved for platform whitelist rules (future)
+- L090–L099: accessibility and namespace rules
