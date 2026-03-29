@@ -20,17 +20,35 @@ export interface HtmlLintResult {
   totalFindings: number;
 }
 
+const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
+
 /**
- * Extract all <math>...</math> blocks from an HTML string using a simple
+ * If a math block uses a namespace prefix (e.g. <m:math>) but was extracted
+ * without its xmlns declaration (which lives on an ancestor element), inject
+ * the declaration so the XML parser can resolve the prefix.
+ */
+function ensureMathNs(block: string): string {
+  const prefixMatch = /^<([\w]+):math[\s>]/i.exec(block);
+  if (!prefixMatch) return block; // unprefixed — nothing to do
+  const prefix = prefixMatch[1];
+  const nsAttr = `xmlns:${prefix}="${MATHML_NS}"`;
+  if (block.includes(nsAttr)) return block; // already has it
+  // Insert the xmlns declaration into the opening tag
+  return block.replace(/^(<[\w]+:math)(\s|>)/, `$1 ${nsAttr}$2`);
+}
+
+/**
+ * Extract all <math>...</math> blocks from an HTML/XML string using a simple
  * regex approach (adequate for lint purposes; not a full HTML parser).
+ * Handles namespace-prefixed elements (e.g. <m:math> in DTBook/NIMAS).
  */
 function extractMathBlocks(html: string): string[] {
   const blocks: string[] = [];
-  // Match <math ...> ... </math> (non-greedy, case-insensitive, allow multiline)
-  const mathRe = /<math(?:\s[^>]*)?>[\s\S]*?<\/math>/gi;
+  // Match <math> or namespace-prefixed <m:math> etc. (non-greedy, case-insensitive, multiline)
+  const mathRe = /<(?:[\w]+:)?math(?:\s[^>]*)?>[\s\S]*?<\/(?:[\w]+:)?math>/gi;
   let m: RegExpExecArray | null;
   while ((m = mathRe.exec(html)) !== null) {
-    blocks.push(m[0]);
+    blocks.push(ensureMathNs(m[0]));
   }
   return blocks;
 }
