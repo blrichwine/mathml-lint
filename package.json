@@ -22,6 +22,10 @@
     "./formats/epub": {
       "import": "./dist/formats/epub.js",
       "require": "./dist/formats/epub.cjs"
+    },
+    "./formats/nimas": {
+      "import": "./dist/formats/nimas.js",
+      "require": "./dist/formats/nimas.cjs"
     }
   },
   "files": [

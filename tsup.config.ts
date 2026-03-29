@@ -7,6 +7,7 @@ export default defineConfig([
       index: 'src/index.ts',
       'formats/html': 'src/formats/html.ts',
       'formats/epub': 'src/formats/epub.ts',
+      'formats/nimas': 'src/formats/nimas.ts',
     },
     format: ['esm', 'cjs'],
     dts: true,

@@ -64,7 +64,7 @@ program
   .name('mathml-lint')
   .description('Spec-aligned heuristic linter for MathML authoring')
   .version(pkg.version)
-  .argument('<files...>', 'MathML, HTML, XHTML, NIMAS, or EPUB3 files to lint (globs accepted)')
+  .argument('<files...>', 'MathML, HTML, XHTML, EPUB3, or NIMAS package (.zip) files to lint (globs accepted)')
   .option('-p, --profile <id>', 'Lint profile: presentation-mathml3 (default), presentation-mathml4, core-mathml3, core-mathml4', 'presentation-mathml3')
   .option('-f, --format <fmt>', 'Output format: text (default) or json', 'text')
   .option('--overlay <path>', 'Path to JSON overlay rules file')
@@ -139,7 +139,25 @@ async function run(): Promise<void> {
             if (block.result.summary.total > 0) hasFindings = true;
           }
         }
-      } else if (['.html', '.xhtml', '.htm', '.nimas'].includes(ext)) {
+      } else if (ext === '.nimas' || ext === '.zip') {
+        const { lintNimasFile } = await import('./formats/nimas.js');
+        const nimasResult = await lintNimasFile(filePath, lintOptions);
+        if (nimasResult.contentItems.length === 0) {
+          if (opts.format === 'text') {
+            process.stdout.write(`  ${filePath} — no <math> elements found\n`);
+          }
+        }
+        for (const contentItem of nimasResult.contentItems) {
+          for (const block of contentItem.blocks) {
+            if (opts.format === 'json') {
+              jsonResults.push({ file: `${filePath}!${contentItem.sourceFile}#${block.index}`, result: block.result });
+            } else {
+              printTextResult(block.result, `${contentItem.sourceFile}#math[${block.index}]`);
+            }
+            if (block.result.summary.total > 0) hasFindings = true;
+          }
+        }
+      } else if (['.html', '.xhtml', '.htm'].includes(ext)) {
         const content = readFileSync(filePath, 'utf8');
         const htmlResult = await lintHtmlFile(content, filePath, lintOptions);
         for (const block of htmlResult.blocks) {
