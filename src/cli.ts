@@ -16,6 +16,18 @@ const pkg = _require('../package.json') as { version: string };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
+const SEVERITY_RANK: Record<string, number> = { error: 3, warn: 2, info: 1 };
+
+function filterResult(result: LintResult, minSeverity: string, verbose: boolean): LintResult {
+  if (verbose) return result;
+  const minRank = SEVERITY_RANK[minSeverity] ?? 2;
+  const findings = result.findings.filter((f) => (SEVERITY_RANK[f.severity] ?? 0) >= minRank);
+  const errors   = findings.filter((f) => f.severity === 'error').length;
+  const warnings = findings.filter((f) => f.severity === 'warn').length;
+  const infos    = findings.filter((f) => f.severity === 'info').length;
+  return { ...result, findings, summary: { errors, warnings, infos, total: findings.length } };
+}
+
 function severitySymbol(s: LintMessage['severity']): string {
   switch (s) {
     case 'error': return '✗';
@@ -69,7 +81,9 @@ program
   .option('-f, --format <fmt>', 'Output format: text (default) or json', 'text')
   .option('--overlay <path>', 'Path to JSON overlay rules file')
   .option('--ignore-data-mjx', 'Suppress warnings for data-mjx-* attributes', false)
-  .option('--max-findings <n>', 'Stop after N findings per file', '500');
+  .option('--max-findings <n>', 'Stop after N findings per file', '500')
+  .option('--min-severity <level>', 'Minimum severity to report: error, warn (default), info', 'warn')
+  .option('--verbose', 'Show all findings regardless of --min-severity', false);
 
 program.parse();
 
@@ -79,6 +93,8 @@ const opts = program.opts<{
   overlay?: string;
   ignoreDataMjx: boolean;
   maxFindings: string;
+  minSeverity: string;
+  verbose: boolean;
 }>();
 
 const files = program.args;
@@ -116,6 +132,8 @@ async function run(): Promise<void> {
   let hasFindings = false;
   let hasError = false;
 
+  const applyFilter = (r: LintResult) => filterResult(r, opts.minSeverity, opts.verbose);
+
   for (const filePath of resolvedFiles) {
     if (!existsSync(filePath)) {
       process.stderr.write(`File not found: ${filePath}\n`);
@@ -131,12 +149,13 @@ async function run(): Promise<void> {
         const epubResult = await lintEpubFile(filePath, lintOptions);
         for (const spineItem of epubResult.spineItems) {
           for (const block of spineItem.blocks) {
+            const result = applyFilter(block.result);
             if (opts.format === 'json') {
-              jsonResults.push({ file: `${filePath}!${spineItem.sourceFile}#${block.index}`, result: block.result });
+              jsonResults.push({ file: `${filePath}!${spineItem.sourceFile}#${block.index}`, result });
             } else {
-              printTextResult(block.result, `${spineItem.sourceFile}#math[${block.index}]`);
+              printTextResult(result, `${spineItem.sourceFile}#math[${block.index}]`);
             }
-            if (block.result.summary.total > 0) hasFindings = true;
+            if (result.summary.total > 0) hasFindings = true;
           }
         }
       } else if (ext === '.nimas' || ext === '.zip') {
@@ -149,24 +168,26 @@ async function run(): Promise<void> {
         }
         for (const contentItem of nimasResult.contentItems) {
           for (const block of contentItem.blocks) {
+            const result = applyFilter(block.result);
             if (opts.format === 'json') {
-              jsonResults.push({ file: `${filePath}!${contentItem.sourceFile}#${block.index}`, result: block.result });
+              jsonResults.push({ file: `${filePath}!${contentItem.sourceFile}#${block.index}`, result });
             } else {
-              printTextResult(block.result, `${contentItem.sourceFile}#math[${block.index}]`);
+              printTextResult(result, `${contentItem.sourceFile}#math[${block.index}]`);
             }
-            if (block.result.summary.total > 0) hasFindings = true;
+            if (result.summary.total > 0) hasFindings = true;
           }
         }
       } else if (['.html', '.xhtml', '.htm'].includes(ext)) {
         const content = readFileSync(filePath, 'utf8');
         const htmlResult = await lintHtmlFile(content, filePath, lintOptions);
         for (const block of htmlResult.blocks) {
+          const result = applyFilter(block.result);
           if (opts.format === 'json') {
-            jsonResults.push({ file: `${filePath}#math[${block.index}]`, result: block.result });
+            jsonResults.push({ file: `${filePath}#math[${block.index}]`, result });
           } else {
-            printTextResult(block.result, `${filePath}#math[${block.index}]`);
+            printTextResult(result, `${filePath}#math[${block.index}]`);
           }
-          if (block.result.summary.total > 0) hasFindings = true;
+          if (result.summary.total > 0) hasFindings = true;
         }
         if (htmlResult.blocks.length === 0 && opts.format === 'text') {
           process.stdout.write(`  ${filePath} — no <math> elements found\n`);
@@ -174,7 +195,7 @@ async function run(): Promise<void> {
       } else {
         // Treat as raw MathML XML
         const source = readFileSync(filePath, 'utf8');
-        const result = await lintMathML(source, { ...lintOptions, sourceFile: filePath });
+        const result = applyFilter(await lintMathML(source, { ...lintOptions, sourceFile: filePath }));
         if (opts.format === 'json') {
           jsonResults.push({ file: filePath, result });
         } else {
