@@ -1,6 +1,6 @@
 {
   "name": "mathml-lint",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha.1",
   "description": "Heuristic MathML authoring linter — catches semantic errors that XML schema validators miss",
   "type": "module",
   "main": "./dist/index.cjs",
