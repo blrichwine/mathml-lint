@@ -35,23 +35,27 @@ Arguments:
                 Glob patterns are accepted: "src/**/*.html"
 
 Options:
-  -p, --profile <id>       Lint profile (default: presentation-mathml3)
-                           presentation-mathml3 | presentation-mathml4
-                           core-mathml3 | core-mathml4
-  -f, --format <fmt>       Output format: text (default) | json
-  --overlay <path>         JSON file with per-rule severity overrides
-  --ignore-data-mjx        Suppress warnings for data-mjx-* attributes
-  --max-findings <n>       Stop after N findings per file (default: 500)
-  -V, --version            Print version
-  -h, --help               Show help
+  -p, --profile <id>         Lint profile (default: presentation-mathml3)
+                             presentation-mathml3 | presentation-mathml4
+                             core-mathml3 | core-mathml4
+  -f, --format <fmt>         Output format: text (default) | json
+  --overlay <path>           JSON file with per-rule severity overrides
+  --ignore-data-mjx          Suppress warnings for data-mjx-* attributes
+  --max-findings <n>         Stop after N findings per file (default: 500)
+  --min-severity <level>     Minimum severity to report: error | warn (default) | info
+                             Findings below this level are suppressed from output
+                             and do not affect the exit code
+  --verbose                  Show all findings regardless of --min-severity
+  -V, --version              Print version
+  -h, --help                 Show help
 ```
 
 ### Exit codes
 
 | Code | Meaning |
 |------|---------|
-| 0 | No findings |
-| 1 | One or more findings |
+| 0 | No findings at or above `--min-severity` |
+| 1 | One or more findings at or above `--min-severity` |
 | 2 | Invocation error or file not found |
 
 ### Examples
@@ -65,6 +69,12 @@ mathml-lint "content/**/*.html"
 
 # Target MathML Core with JSON output
 mathml-lint book.epub --profile core-mathml4 --format json > report.json
+
+# CI pipeline — fail only on errors, suppress warnings and infos
+mathml-lint book.epub --min-severity error
+
+# Authoring workflow — show everything including hints
+mathml-lint file.html --verbose
 
 # Suppress mathvariant safe-list warnings with an overlay
 mathml-lint file.html --overlay my-overlays.json
@@ -173,6 +183,7 @@ See [RULES.md](RULES.md) for the complete rule reference including rationale, tr
 | L060–L062 | Intent/arg authoring hints (MathML4) |
 | L070–L073 | MathML Core compatibility |
 | L080–L084 | W3C MathML Safe List / sanitization warnings |
+| L090–L091 | Accessibility and namespace rules (alttext, xmlns) |
 
 ---
 
